@@ -11,8 +11,12 @@
 
 #import "Model.h"
 #import "TableViewCell.h"
+
+static const int block_key;
+
 @interface TableViewController ()
 @property(nonatomic, strong) NSMutableArray *mutableArray;
+@property(nonatomic, strong) Model *model;
 @end
 
 @implementation TableViewController
@@ -21,6 +25,17 @@
     [super viewDidLoad];
     
     self.view.backgroundColor = [UIColor greenColor];
+    
+    self.model = [[Model alloc]init];
+    
+    [self.model addObserver:self forKeyPath:@"name" options:(NSKeyValueObservingOptionNew) context:@"哈哈哈"];
+   
+    JULog(@"%p", &block_key);
+    
+    int a = 0;
+    
+    JULog(@"%p", &a);
+
     
 }
 
@@ -32,26 +47,51 @@
 #pragma mark - Table view data source
 
 -(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
-
-
-    [[self class] swizzleInstanceMethod:@selector(text1) with:@selector(text2)];
     
-    [self text1];
-
+    static int i = 100;
+    i++;
     
+    self.model.name = [NSString stringWithFormat:@"%d",i];
+   
+    
+}
+
+
+-(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
+    
+    JULog(@"值改变: %@ \n ", change);
+    
+    JULog(@"NSKeyValueChangeOldKey  ：%@", change[NSKeyValueChangeOldKey]);
+    JULog(@"NSKeyValueChangeNewKey  ：%@", change[NSKeyValueChangeNewKey]);
+    JULog(@"NSKeyValueChangeKindKey  ：%@", change[NSKeyValueChangeKindKey]);
+    JULog(@"NSKeyValueChangeIndexesKey  ：%@", change[NSKeyValueChangeIndexesKey]);
+    JULog(@"NSKeyValueChangeNotificationIsPriorKey  ：%@", change[NSKeyValueChangeNotificationIsPriorKey]);
+
     
 }
 
 -(void)setBackgroundColor:(UIColor *)color{
-    
     self.view.backgroundColor = color;
 }
 
 -(void)text1{
     
+    Class archiver;
+    Class unarchiver;
+    
+    @try {
+         [unarchiver unarchiveObjectWithData:[archiver archivedDataWithRootObject:self]];
+
+    
+        
+    } @catch (NSException *exception) {
+        
+        
+        
+    }
     
     JULog(@"text1");
-    
+
 }
 
 
@@ -103,5 +143,13 @@
     // Pass the selected object to the new view controller.
 }
 */
+
+- (void)dealloc
+{
+    [self.model removeObserver:self forKeyPath:@"name"];
+}
+
+
+
 
 @end
